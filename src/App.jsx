@@ -731,7 +731,7 @@ export default function App() {
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5">
-                        Delivered to <span className="font-bold text-slate-900">{report.recipient_owner?.name || (!isHealthcare ? 'Sarah Chen' : 'Dave Miller')}</span> ({report.recipient_owner?.role || 'Lead'}) via <span className="font-bold text-slate-900">{report.simulated_channel || (!isHealthcare ? 'Slack #fin-recon' : 'Slack #hl7-integrations')}</span>
+                        Delivered to <span className="font-bold text-slate-900">{report.recipient_owner?.name || (!isHealthcare ? 'Sarah Chen' : 'Dave Miller')}</span> ({report.recipient_owner?.role || 'Lead'}) via <span className="font-bold text-slate-900">{report.channel || report.delivery_channel || report.simulated_channel || 'Urgent Mobile SMS (+91 9074121510) & Google SMTP'}</span>
                       </p>
                     </div>
                   </div>

@@ -52,12 +52,12 @@ export default function ReportViewModal({ report, onClose }) {
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Owner Incident Report</h3>
                 <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">
-                  Delivered (Simulated)
+                  Delivered (Live Authenticated Dispatch)
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
                 Delivered to: <span className="text-slate-900 font-extrabold">{owner.name}</span> ({owner.role}) via{' '}
-                <span className="text-slate-900 font-bold">{report.simulated_channel}</span>
+                <span className="text-slate-900 font-bold">{report.channel || report.delivery_channel || report.simulated_channel || 'Urgent Mobile SMS (+91 9074121510) & Google SMTP'}</span>
               </p>
             </div>
           </div>

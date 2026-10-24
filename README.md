@@ -31,8 +31,8 @@ Render automatically detects Python and FastAPI:
    - `PYTHON_VERSION`: `3.11.9`
    - `SMTP_HOST`: `smtp.gmail.com`
    - `SMTP_PORT`: `587`
-   - `SMTP_USER`: `priyaljoshi2153@gmail.com`
-   - `SMTP_PASS`: `bnlkxdhovudmrbpv` *(your 16-character Google App Password)*
+   - `SMTP_USER`: `your-email@gmail.com` *(e.g. your Gmail address)*
+   - `SMTP_PASS`: `your-16-character-app-password` *(Google App Password from myaccount.google.com/apppasswords)*
    - `SMTP_SENDER_NAME`: `Tracer Incident Sentinel`
    - `DEFAULT_RECIPIENT_EMAIL`: `nidhinrajm55@gmail.com`
    - `DEFAULT_RECIPIENT_PHONE`: `9074121510`
