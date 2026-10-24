@@ -1,0 +1,240 @@
+{
+  "pack_id": "healthcare",
+  "name": "Healthcare (HL7 Interface & Queue Monitoring)",
+  "industry": "Regulated Healthcare & Clinical Integration",
+  "description": "Pattern-compatible with HL7 v2.x/v3 interfaces, ADT admission queues, ORU lab result streams, pharmacy CPOE orders, and EDI 837 billing gateways.",
+  "village_theme": {
+    "ground_color": "#0b1928",
+    "path_color": "#1b334a",
+    "accent_color": "#06b6d4",
+    "sky_gradient": ["#040d16", "#091e30"]
+  },
+  "assets": [
+    {
+      "id": "adt_feed",
+      "name": "ADT Patient Inbound Feed",
+      "type": "feed",
+      "vocab_label": "HL7 ADT (Admit/Discharge/Transfer)",
+      "icon": "HeartPulse",
+      "description": "Inbound hospital admission and transfer feed. Feeds bed management and real-time patient rosters.",
+      "owner": {
+        "id": "owner_rachel",
+        "name": "Dr. Rachel Kim",
+        "role": "Clinical Systems Director",
+        "channel": "Clinical Pager #med-adt",
+        "backup_owner_id": "owner_dave"
+      },
+      "dependencies": [],
+      "checks": [
+        "adt_message_freshness"
+      ],
+      "allowed_actions": ["restart_channel", "revert_change", "escalate_to_human"]
+    },
+    {
+      "id": "lab_results_feed",
+      "name": "Lab Results Interface",
+      "type": "feed",
+      "vocab_label": "HL7 ORU_R01 Observation Feed",
+      "icon": "Microscope",
+      "description": "Critical laboratory diagnostics feed delivering stat pathology, CBC, and microbiological findings.",
+      "owner": {
+        "id": "owner_dave",
+        "name": "Dave Miller",
+        "role": "Senior Integration Engineer",
+        "channel": "Slack #hl7-lab-ops",
+        "backup_owner_id": "owner_rachel"
+      },
+      "dependencies": [],
+      "checks": [
+        "message_rejection_rate"
+      ],
+      "allowed_actions": ["revert_change", "restart_channel", "replay_with_dedupe", "escalate_to_human"]
+    },
+    {
+      "id": "interface_message_queue",
+      "name": "Interface Event Queue",
+      "type": "queue",
+      "vocab_label": "Clinical Message Broker Queue",
+      "icon": "Layers",
+      "description": "Reliable transactional buffer holding pending HL7 segments, MSA acknowledgments, and retry buckets.",
+      "owner": {
+        "id": "owner_dave",
+        "name": "Dave Miller",
+        "role": "Senior Integration Engineer",
+        "channel": "Slack #hl7-lab-ops",
+        "backup_owner_id": "owner_siddharth"
+      },
+      "dependencies": ["adt_feed", "lab_results_feed"],
+      "checks": [
+        "queue_depth_and_age",
+        "missing_acknowledgments",
+        "duplicate_message_rate"
+      ],
+      "allowed_actions": ["revert_change", "restart_channel", "replay_with_dedupe", "escalate_to_human"]
+    },
+    {
+      "id": "pharmacy_orders",
+      "name": "Pharmacy CPOE Dispenser",
+      "type": "service",
+      "vocab_label": "CPOE Pharmacy Dispenser Service",
+      "icon": "Stethoscope",
+      "description": "Computerized Provider Order Entry verifying contraindications and routing stat medication doses.",
+      "owner": {
+        "id": "owner_rachel",
+        "name": "Dr. Rachel Kim",
+        "role": "Clinical Systems Director",
+        "channel": "Clinical Pager #med-adt",
+        "backup_owner_id": "owner_dave"
+      },
+      "dependencies": ["interface_message_queue"],
+      "checks": [
+        "pharmacy_dispenser_health",
+        "cpoe_order_freshness"
+      ],
+      "allowed_actions": ["restart_channel", "replay_with_dedupe", "escalate_to_human"]
+    },
+    {
+      "id": "billing_adapter",
+      "name": "Claims & Billing Extractor",
+      "type": "service",
+      "vocab_label": "EDI 837 / CMS Billing Adapter",
+      "icon": "Receipt",
+      "description": "Translates clinical encounters and diagnostic codes (ICD-10/CPT) into standard insurance claims.",
+      "owner": {
+        "id": "owner_siddharth",
+        "name": "Siddharth Rao",
+        "role": "Revenue Cycle Integration Lead",
+        "channel": "Teams #revenue-ops",
+        "backup_owner_id": "owner_dave"
+      },
+      "dependencies": ["interface_message_queue"],
+      "checks": [
+        "claims_adapter_status",
+        "billing_freshness_sla"
+      ],
+      "allowed_actions": ["revert_change", "restart_channel", "escalate_to_human"]
+    }
+  ],
+  "owners": [
+    {
+      "id": "owner_rachel",
+      "name": "Dr. Rachel Kim",
+      "role": "Clinical Systems Director",
+      "email": "rachel.kim.md@healthnet.internal",
+      "channel": "Clinical Pager #med-adt",
+      "backup_owner": "Dave Miller"
+    },
+    {
+      "id": "owner_dave",
+      "name": "Dave Miller",
+      "role": "Senior Integration Engineer",
+      "email": "dave.miller@healthnet.internal",
+      "channel": "Slack #hl7-lab-ops",
+      "backup_owner": "Dr. Rachel Kim"
+    },
+    {
+      "id": "owner_siddharth",
+      "name": "Siddharth Rao",
+      "role": "Revenue Cycle Integration Lead",
+      "email": "siddharth.rao@healthnet.internal",
+      "channel": "Teams #revenue-ops",
+      "backup_owner": "Dave Miller"
+    }
+  ],
+  "check_definitions": {
+    "message_rejection_rate": {
+      "name": "HL7 Message Rejection Rate",
+      "tool": "get_error_histogram",
+      "description": "Monitors percentage of ERR/NACK message frames over 15-minute sliding window",
+      "target_asset": "lab_results_feed",
+      "max_rejection_rate": 2.0,
+      "severity_on_fail": "CRITICAL"
+    },
+    "queue_depth_and_age": {
+      "name": "Interface Queue Depth & Head Age",
+      "tool": "get_queue_state",
+      "description": "Alerts if interface queue holds > 50 messages or oldest pending message > 10 minutes",
+      "target_asset": "interface_message_queue",
+      "max_depth": 50,
+      "max_age_minutes": 10,
+      "severity_on_fail": "CRITICAL"
+    },
+    "missing_acknowledgments": {
+      "name": "Missing MSA Acknowledgment Frames",
+      "tool": "get_queue_state",
+      "description": "Tracks unacknowledged MSA-AA frames waiting for receiver handshake",
+      "target_asset": "interface_message_queue",
+      "max_pending_acks": 10,
+      "severity_on_fail": "HIGH"
+    },
+    "duplicate_message_rate": {
+      "name": "Duplicate HL7 Control ID Rate",
+      "tool": "get_duplicate_stats",
+      "description": "Monitors duplicate MSH-10 message control IDs across the queue",
+      "target_asset": "interface_message_queue",
+      "max_allowed_duplicate_rate": 0.1,
+      "severity_on_fail": "MEDIUM"
+    },
+    "adt_message_freshness": {
+      "name": "ADT Inbound Stream Freshness",
+      "tool": "get_freshness",
+      "description": "Ensures admission stream heartbeat is received within 5 minutes",
+      "target_asset": "adt_feed",
+      "max_lag_minutes": 5,
+      "severity_on_fail": "MEDIUM"
+    },
+    "pharmacy_dispenser_health": {
+      "name": "Pharmacy CPOE Dispenser Channel Health",
+      "tool": "get_job_status",
+      "description": "Verifies cpoe_order_dispenser worker process is active and free of deadlock exceptions.",
+      "target_asset": "pharmacy_orders",
+      "severity_on_fail": "CRITICAL"
+    },
+    "cpoe_order_freshness": {
+      "name": "CPOE Stat Medication Routing Freshness",
+      "tool": "get_freshness",
+      "description": "Ensures stat prescription orders are routed within the 5-minute clinical SLA window.",
+      "target_asset": "pharmacy_orders",
+      "max_lag_minutes": 5,
+      "severity_on_fail": "HIGH"
+    },
+    "claims_adapter_status": {
+      "name": "EDI 837 Claims Generator Health",
+      "tool": "get_job_status",
+      "description": "Verifies that the edi_837_generator claims batching service is running without parser faults.",
+      "target_asset": "billing_adapter",
+      "severity_on_fail": "HIGH"
+    },
+    "billing_freshness_sla": {
+      "name": "CMS-1500 Encounter Ingestion Freshness",
+      "tool": "get_freshness",
+      "description": "Verifies encounter data arrived within 30-minute reimbursement batching window.",
+      "target_asset": "billing_adapter",
+      "max_lag_minutes": 30,
+      "severity_on_fail": "MEDIUM"
+    }
+  },
+  "severity_rules": {
+    "CRITICAL": {
+      "level": "CRITICAL",
+      "urgency": "PAGE_IMMEDIATELY",
+      "criteria": "Direct patient care impact: lab diagnostics blocked or pharmacy order dispatch frozen > 15m.",
+      "escalation_target": "Dr. Rachel Kim & Dave Miller",
+      "fire_intensity": "HIGH"
+    },
+    "HIGH": {
+      "level": "HIGH",
+      "urgency": "PAGE_NOW",
+      "criteria": "Interface queue backing up > 100 messages or duplicate control rate > 1%.",
+      "escalation_target": "Dave Miller",
+      "fire_intensity": "MEDIUM"
+    },
+    "MEDIUM": {
+      "level": "MEDIUM",
+      "urgency": "NOTIFY_NEXT_HOUR",
+      "criteria": "Billing queue delay without immediate clinical care impact.",
+      "escalation_target": "Siddharth Rao",
+      "fire_intensity": "LOW"
+    }
+  }
+}

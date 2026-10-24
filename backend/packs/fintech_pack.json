@@ -1,0 +1,255 @@
+{
+  "pack_id": "fintech",
+  "name": "Fintech (Daily Settlement & Ledger Reconciliation)",
+  "industry": "Regulated Financial Services & Banking",
+  "description": "Monitors settlement feeds, double-entry payment ledgers, daily recon tables, dashboards, and regulatory compliance extracts.",
+  "village_theme": {
+    "ground_color": "#0d1b1e",
+    "path_color": "#23393d",
+    "accent_color": "#10b981",
+    "sky_gradient": ["#061118", "#0f232b"]
+  },
+  "assets": [
+    {
+      "id": "bank_settlement_feed",
+      "name": "Bank Settlement Feed",
+      "type": "feed",
+      "vocab_label": "SFTP Bank Inbound Feed",
+      "icon": "Building2",
+      "description": "Daily cleared settlement batch from correspondent banking partner (Fedwire/ACH/SWIFT).",
+      "owner": {
+        "id": "owner_sarah",
+        "name": "Sarah Chen",
+        "role": "Reconciliation Ops Analyst",
+        "channel": "Slack #fin-recon",
+        "backup_owner_id": "owner_marcus"
+      },
+      "dependencies": [],
+      "checks": [
+        "settlement_file_row_count",
+        "settlement_arrival_freshness"
+      ],
+      "allowed_actions": ["reload_from_corrected_source", "restart_job", "escalate_to_human"]
+    },
+    {
+      "id": "payment_ledger",
+      "name": "Core Payment Ledger",
+      "type": "database",
+      "vocab_label": "Immutable Double-Entry Ledger",
+      "icon": "Landmark",
+      "description": "Transactional core ledger recording customer debits, credits, and unsettled authorizations.",
+      "owner": {
+        "id": "owner_alex",
+        "name": "Alex Rivera",
+        "role": "Ledger Platform Engineer",
+        "channel": "PagerDuty + Teams #ledger-core",
+        "backup_owner_id": "owner_sarah"
+      },
+      "dependencies": [],
+      "checks": [
+        "duplicate_payment_keys"
+      ],
+      "allowed_actions": ["revert_change", "restart_job", "escalate_to_human"]
+    },
+    {
+      "id": "reconciliation_table",
+      "name": "Daily Recon Table",
+      "type": "table",
+      "vocab_label": "Automated Reconciliation Engine",
+      "icon": "Scale",
+      "description": "Matches settlement feed against core ledger records. Detects breaks and float variance.",
+      "owner": {
+        "id": "owner_sarah",
+        "name": "Sarah Chen",
+        "role": "Reconciliation Ops Analyst",
+        "channel": "Slack #fin-recon",
+        "backup_owner_id": "owner_priya"
+      },
+      "dependencies": ["bank_settlement_feed", "payment_ledger"],
+      "checks": [
+        "ledger_vs_bank_total_match"
+      ],
+      "allowed_actions": ["reload_from_corrected_source", "revert_change", "restart_job", "escalate_to_human"]
+    },
+    {
+      "id": "settlement_dashboard",
+      "name": "Settlement Dashboard",
+      "type": "dashboard",
+      "vocab_label": "Treasury & Liquidity Cockpit",
+      "icon": "LayoutDashboard",
+      "description": "Real-time liquidity and daily net settlement visualization for treasury management.",
+      "owner": {
+        "id": "owner_elena",
+        "name": "Elena Rostova",
+        "role": "Head of Treasury Operations",
+        "channel": "Executive Email Digest & Slack #treasury",
+        "backup_owner_id": "owner_sarah"
+      },
+      "dependencies": ["reconciliation_table"],
+      "checks": [
+        "dashboard_refresh_freshness",
+        "dashboard_scheduler_health"
+      ],
+      "allowed_actions": ["restart_job", "escalate_to_human"]
+    },
+    {
+      "id": "regulatory_extract",
+      "name": "Regulatory Compliance Extract",
+      "type": "service",
+      "vocab_label": "RBI / FinCEN Reg Reporting",
+      "icon": "ShieldCheck",
+      "description": "Cryptographically signed regulatory audit extract submitted to central banking authorities.",
+      "owner": {
+        "id": "owner_vikram",
+        "name": "Vikram Malhotra",
+        "role": "Compliance Officer",
+        "channel": "Compliance Pager & Vault Audit",
+        "backup_owner_id": "owner_alex"
+      },
+      "dependencies": ["reconciliation_table"],
+      "checks": [
+        "regulatory_extract_sla",
+        "regulatory_seal_integrity"
+      ],
+      "allowed_actions": ["revert_change", "restart_job", "escalate_to_human"]
+    }
+  ],
+  "owners": [
+    {
+      "id": "owner_sarah",
+      "name": "Sarah Chen",
+      "role": "Reconciliation Ops Analyst",
+      "email": "sarah.chen@fintechcorp.internal",
+      "channel": "Slack #fin-recon",
+      "backup_owner": "Marcus Vance"
+    },
+    {
+      "id": "owner_alex",
+      "name": "Alex Rivera",
+      "role": "Ledger Platform Engineer",
+      "email": "alex.rivera@fintechcorp.internal",
+      "channel": "PagerDuty + Teams #ledger-core",
+      "backup_owner": "Sarah Chen"
+    },
+    {
+      "id": "owner_elena",
+      "name": "Elena Rostova",
+      "role": "Head of Treasury Operations",
+      "email": "elena.rostova@fintechcorp.internal",
+      "channel": "Executive Email Digest",
+      "backup_owner": "Sarah Chen"
+    },
+    {
+      "id": "owner_vikram",
+      "name": "Vikram Malhotra",
+      "role": "Compliance Officer",
+      "email": "vikram.malhotra@fintechcorp.internal",
+      "channel": "Compliance Pager",
+      "backup_owner": "Alex Rivera"
+    },
+    {
+      "id": "owner_marcus",
+      "name": "Marcus Vance",
+      "role": "Senior Treasury Analyst",
+      "email": "marcus.vance@fintechcorp.internal",
+      "channel": "Slack #fin-recon",
+      "backup_owner": "Elena Rostova"
+    },
+    {
+      "id": "owner_priya",
+      "name": "Priya Sharma",
+      "role": "Fintech Risk Lead",
+      "email": "priya.sharma@fintechcorp.internal",
+      "channel": "Teams #risk-control",
+      "backup_owner": "Vikram Malhotra"
+    }
+  ],
+  "check_definitions": {
+    "ledger_vs_bank_total_match": {
+      "name": "Ledger vs Bank Cleared Match",
+      "tool": "get_checksum_totals",
+      "description": "Compares ledger debits/credits total to bank cleared settlement amount",
+      "target_asset": "reconciliation_table",
+      "comparison": "equal",
+      "tolerance": 0.00,
+      "severity_on_fail": "CRITICAL"
+    },
+    "settlement_file_row_count": {
+      "name": "Settlement Batch Ingestion Count",
+      "tool": "compare_to_baseline",
+      "description": "Verifies inbound cleared batch count against trailing 30-day baseline average (12,500 rows +/- 10%)",
+      "target_asset": "bank_settlement_feed",
+      "max_drop_percentage": 15.0,
+      "severity_on_fail": "CRITICAL"
+    },
+    "settlement_arrival_freshness": {
+      "name": "Settlement File SLA Freshness",
+      "tool": "get_freshness",
+      "description": "Checks if settlement batch arrived within standard SLA window (<60 min)",
+      "target_asset": "bank_settlement_feed",
+      "max_lag_minutes": 60,
+      "severity_on_fail": "MEDIUM"
+    },
+    "duplicate_payment_keys": {
+      "name": "Payment Key Uniqueness",
+      "tool": "get_duplicate_stats",
+      "description": "Verifies that no payment UUIDs or settlement references have been duplicated",
+      "target_asset": "payment_ledger",
+      "max_allowed_duplicate_rate": 0.0,
+      "severity_on_fail": "HIGH"
+    },
+    "dashboard_refresh_freshness": {
+      "name": "Treasury Dashboard SLA Freshness",
+      "tool": "get_freshness",
+      "description": "Verifies that Metabase liquidity aggregations refreshed within the 15-minute SLA window.",
+      "target_asset": "settlement_dashboard",
+      "max_lag_minutes": 15,
+      "severity_on_fail": "HIGH"
+    },
+    "dashboard_scheduler_health": {
+      "name": "Treasury Cube Scheduler Health",
+      "tool": "get_job_status",
+      "description": "Checks orchestrator status and exit code for the metabase_cube_refresh container.",
+      "target_asset": "settlement_dashboard",
+      "severity_on_fail": "MEDIUM"
+    },
+    "regulatory_extract_sla": {
+      "name": "Compliance Batch SLA Freshness",
+      "tool": "get_freshness",
+      "description": "Checks that the RBI / FinCEN batch extract builder generated daily regulatory ledger proofs.",
+      "target_asset": "regulatory_extract",
+      "max_lag_minutes": 120,
+      "severity_on_fail": "CRITICAL"
+    },
+    "regulatory_seal_integrity": {
+      "name": "Cryptographic Audit Seal Validation",
+      "tool": "get_job_status",
+      "description": "Verifies that the rbi_fincen_batch_builder produced valid cryptographic audit seal hashes.",
+      "target_asset": "regulatory_extract",
+      "severity_on_fail": "CRITICAL"
+    }
+  },
+  "severity_rules": {
+    "CRITICAL": {
+      "level": "CRITICAL",
+      "urgency": "PAGE_IMMEDIATELY",
+      "criteria": "Direct financial break > $10,000, broken ledger balance, or regulatory window deadline < 2h.",
+      "escalation_target": "Sarah Chen & Marcus Vance",
+      "fire_intensity": "HIGH"
+    },
+    "HIGH": {
+      "level": "HIGH",
+      "urgency": "PAGE_NOW",
+      "criteria": "Duplicate keys detected or financial mismatch between $1,000 and $10,000.",
+      "escalation_target": "Alex Rivera",
+      "fire_intensity": "MEDIUM"
+    },
+    "MEDIUM": {
+      "level": "MEDIUM",
+      "urgency": "NOTIFY_NEXT_HOUR",
+      "criteria": "Late arrival of non-critical batch or upstream latency warning.",
+      "escalation_target": "Recon Ops Queue",
+      "fire_intensity": "LOW"
+    }
+  }
+}

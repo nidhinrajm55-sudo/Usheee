@@ -1,0 +1,93 @@
+{
+  "pack_id": "logistics",
+  "name": "Supply Chain & Logistics (Customs & Cold-Chain Telematics)",
+  "industry": "Regulated Cold-Chain & Global Logistics",
+  "description": "Extensible stub pack proving PACK-1 architecture: IoT telematics, temperature telemetry, WMS ledger, customs clearance manifests.",
+  "village_theme": {
+    "ground_color": "#181a1b",
+    "path_color": "#2c2e30",
+    "accent_color": "#f59e0b",
+    "sky_gradient": ["#0f1011", "#212325"]
+  },
+  "assets": [
+    {
+      "id": "telematics_iot_stream",
+      "name": "Cold-Chain IoT Stream",
+      "type": "feed",
+      "vocab_label": "MQTT Cold-Chain Telematics",
+      "icon": "Truck",
+      "description": "Real-time temperature and GPS pings from refrigerated cargo containers.",
+      "owner": {
+        "id": "owner_marina",
+        "name": "Marina Chen",
+        "role": "Logistics Dispatch Lead",
+        "channel": "Slack #cold-chain-ops",
+        "backup_owner_id": "owner_hassan"
+      },
+      "dependencies": [],
+      "checks": ["telematics_freshness"],
+      "allowed_actions": ["restart_job", "escalate_to_human"]
+    },
+    {
+      "id": "customs_manifest_engine",
+      "name": "Customs Manifest Engine",
+      "type": "table",
+      "vocab_label": "Port Customs Clearance Gateway",
+      "icon": "Container",
+      "description": "Cross-border regulatory customs manifest validator and tariff reconciliation.",
+      "owner": {
+        "id": "owner_hassan",
+        "name": "Hassan Al-Mansoor",
+        "role": "Global Trade Compliance",
+        "channel": "Compliance Urgent SMS",
+        "backup_owner_id": "owner_marina"
+      },
+      "dependencies": ["telematics_iot_stream"],
+      "checks": ["manifest_checksum_match"],
+      "allowed_actions": ["reload_from_corrected_source", "revert_change", "escalate_to_human"]
+    }
+  ],
+  "owners": [
+    {
+      "id": "owner_marina",
+      "name": "Marina Chen",
+      "role": "Logistics Dispatch Lead",
+      "channel": "Slack #cold-chain-ops",
+      "backup_owner": "Hassan Al-Mansoor"
+    },
+    {
+      "id": "owner_hassan",
+      "name": "Hassan Al-Mansoor",
+      "role": "Global Trade Compliance",
+      "channel": "Compliance Urgent SMS",
+      "backup_owner": "Marina Chen"
+    }
+  ],
+  "check_definitions": {
+    "telematics_freshness": {
+      "name": "IoT Ping Freshness",
+      "tool": "get_freshness",
+      "description": "Verifies container telemetry pings within 10 minutes",
+      "target_asset": "telematics_iot_stream",
+      "max_lag_minutes": 10,
+      "severity_on_fail": "HIGH"
+    },
+    "manifest_checksum_match": {
+      "name": "Customs Manifest Match",
+      "tool": "get_checksum_totals",
+      "description": "Validates manifest declared container weights vs port scale tare",
+      "target_asset": "customs_manifest_engine",
+      "tolerance": 0.00,
+      "severity_on_fail": "CRITICAL"
+    }
+  },
+  "severity_rules": {
+    "CRITICAL": {
+      "level": "CRITICAL",
+      "urgency": "PAGE_IMMEDIATELY",
+      "criteria": "Customs port hold or temperature excursion in pharmaceutical vaccines.",
+      "escalation_target": "Hassan Al-Mansoor",
+      "fire_intensity": "HIGH"
+    }
+  }
+}

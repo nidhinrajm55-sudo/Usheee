@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: tracer-sentinel
+    env: python
+    buildCommand: pip install -r requirements.txt && npm install && npm run build
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: NODE_VERSION
+        value: 20.12.0
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: priyaljoshi2153@gmail.com
+      - key: SMTP_SENDER_NAME
+        value: Tracer Incident Sentinel
