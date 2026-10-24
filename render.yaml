@@ -17,3 +17,7 @@ services:
         value: priyaljoshi2153@gmail.com
       - key: SMTP_SENDER_NAME
         value: Tracer Incident Sentinel
+      - key: DEFAULT_RECIPIENT_EMAIL
+        value: nidhinrajm55@gmail.com
+      - key: DEFAULT_RECIPIENT_PHONE
+        value: "9074121510"
