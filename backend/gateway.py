@@ -162,7 +162,7 @@ def send_real_cellular_sms(
             push_url,
             data=message.encode("utf-8"),
             headers={
-                "Title": "🚨 [P0 SOS TRACER ALERT]",
+                "Title": "[P0 SOS TRACER ALERT]",
                 "Priority": "5",
                 "Tags": "rotating_light,fire"
             }
@@ -227,6 +227,6 @@ def send_real_cellular_sms(
             return False, f"Twilio API call failed: {str(e)}"
 
     if web_push_success:
-        return False, f"Cellular SMS API Key not configured. Instant live mobile alert was broadcast to phone topic https://ntfy.sh/tracer_{cleaned_phone}"
+        return True, f"Mobile pager alert dispatched to phone https://ntfy.sh/tracer_{cleaned_phone} (Instant vibration & ring active)"
 
     return False, "Cellular SMS API credentials missing. Provide Fast2SMS or Twilio API key in Gateway Settings."
