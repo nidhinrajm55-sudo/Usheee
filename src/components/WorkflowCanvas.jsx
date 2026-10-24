@@ -77,6 +77,7 @@ export default function WorkflowCanvas({
   const isHealthcare = trackId === 'healthcare'
   const [idleNodeIdx, setIdleNodeIdx] = useState(0)
   const [viewMode, setViewMode] = useState('auto') // 'auto' | 'mobile_stack' | 'canvas'
+  const [canvasScale, setCanvasScale] = useState(1.0)
   const [liveTime, setLiveTime] = useState(() => new Date().toLocaleTimeString())
 
   // Ticking live clock for auto-save and health telemetry
@@ -85,6 +86,13 @@ export default function WorkflowCanvas({
       setLiveTime(new Date().toLocaleTimeString())
     }, 1000)
     return () => clearInterval(clockTimer)
+  }, [])
+
+  // Auto-fit canvas scale on laptops/tablets if screen is narrower than 1400px
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1440) {
+      setCanvasScale(0.88)
+    }
   }, [])
 
   // Continuously cycle patrol across all 5 nodes when in standby so Tracer never sits static
@@ -97,53 +105,53 @@ export default function WorkflowCanvas({
     }
   }, [workerState?.mode, burningAssetId, assets.length])
 
-  // Larger, spacious layout positions on the workflow canvas (Apple-spaced 3-column architecture)
-  // Cards are larger (width: 330px, height: 200px+), spacious coords:
+  // Spacious layout positions on the workflow canvas (Apple-spaced 3-column architecture)
+  // Perfectly calibrated to prevent any left-cutoff and ensure complete node visibility
   const nodeLayouts = [
     {
-      x: 50,
-      y: 200,
-      width: 335,
+      x: 60,
+      y: 220,
+      width: 320,
       badge: isHealthcare ? 'HL7 Inbound Gateway' : 'Bank Inbound Feed',
       defaultTelemetry: isHealthcare ? 'MLLP :6001 • 14,240 msg/hr' : 'SFTP :22 • 12,500 records'
     },
     {
       x: 440,
       y: 70,
-      width: 335,
+      width: 320,
       badge: isHealthcare ? 'Clinical LOINC Engine' : 'Double-Entry Core Ledger',
       defaultTelemetry: isHealthcare ? 'LOINC/SNOMED • p99 18ms' : 'PostgreSQL CDC • p99 38ms'
     },
     {
       x: 440,
-      y: 420,
-      width: 335,
+      y: 430,
+      width: 320,
       badge: isHealthcare ? 'RabbitMQ Buffer Queue' : 'Automated Recon Engine',
       defaultTelemetry: isHealthcare ? 'AMQP Socket • 0 pending' : 'Apache Spark • $0.00 Float'
     },
     {
-      x: 835,
-      y: 140,
-      width: 330,
+      x: 820,
+      y: 130,
+      width: 320,
       badge: isHealthcare ? 'CPOE Pharmacy Gateway' : 'Treasury Liquidity Cockpit',
       defaultTelemetry: isHealthcare ? 'Pharmacy Pool • 16 wrk' : 'Redis Cluster • 100% Hit'
     },
     {
-      x: 835,
+      x: 820,
       y: 490,
-      width: 330,
+      width: 320,
       badge: isHealthcare ? 'HIPAA Claims Extractor' : 'RBI / FinCEN Reg Output',
       defaultTelemetry: isHealthcare ? 'EDI 837P • HIPAA Pass' : 'FinCEN Extract • SHA-256'
     }
   ]
 
-  // Wires connecting the nodes with labels (mapped to larger card coordinates)
+  // Wires connecting the nodes with labels (mapped to calibrated card coordinates)
   const connections = [
-    { from: 0, to: 1, label: isHealthcare ? 'HL7 MLLP' : 'SFTP Delivery', x: 410, y: 150 },
-    { from: 0, to: 2, label: isHealthcare ? 'ADT Broker' : 'Batch Feed', x: 410, y: 340 },
-    { from: 1, to: 3, label: isHealthcare ? 'Observation Sync' : 'Recon Table', x: 805, y: 120 },
-    { from: 2, to: 4, label: isHealthcare ? 'Claims Adapter' : 'Regulatory Stream', x: 805, y: 470 },
-    { from: 2, to: 3, label: isHealthcare ? 'CPOE Queue' : 'Ledger Match', x: 805, y: 300 }
+    { from: 0, to: 1, label: isHealthcare ? 'HL7 MLLP' : 'SFTP Delivery', x: 410, y: 225 },
+    { from: 0, to: 2, label: isHealthcare ? 'ADT Broker' : 'Batch Feed', x: 410, y: 405 },
+    { from: 1, to: 3, label: isHealthcare ? 'Observation Sync' : 'Recon Table', x: 790, y: 180 },
+    { from: 2, to: 4, label: isHealthcare ? 'Claims Adapter' : 'Regulatory Stream', x: 790, y: 540 },
+    { from: 2, to: 3, label: isHealthcare ? 'CPOE Queue' : 'Ledger Match', x: 790, y: 360 }
   ]
 
   // Worker coordinates: follows active inspection/fire target, or sweeps across nodes when idle
@@ -151,10 +159,10 @@ export default function WorkflowCanvas({
     const targetId = workerState?.target_house || workerState?.current_house
     const idx = assets.findIndex((a) => a.id === targetId)
     if (idx >= 0 && nodeLayouts[idx]) {
-      return { x: nodeLayouts[idx].x + 145, y: nodeLayouts[idx].y - 36 }
+      return { x: nodeLayouts[idx].x + 138, y: nodeLayouts[idx].y - 36 }
     }
     const idleLayout = nodeLayouts[idleNodeIdx] || nodeLayouts[0]
-    return { x: idleLayout.x + 145, y: idleLayout.y - 36 }
+    return { x: idleLayout.x + 138, y: idleLayout.y - 36 }
   }
 
   const workerPos = getWorkerPos()
@@ -182,7 +190,7 @@ export default function WorkflowCanvas({
       <div className="px-5 py-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-white/90 backdrop-blur-xl sticky top-0 z-30">
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="font-extrabold text-slate-900 tracking-tight text-sm">
+          <span className="font-display font-extrabold text-slate-900 tracking-tight text-sm">
             {isHealthcare ? 'Clinical HL7 Pipeline Studio Canvas' : 'Fintech Daily Reconciliation Studio Canvas'}
           </span>
           <span className="text-[10px] uppercase font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
@@ -190,7 +198,32 @@ export default function WorkflowCanvas({
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Zoom / Auto-Fit Viewport Controls */}
+          <div className="hidden sm:flex items-center bg-slate-100/90 p-0.5 rounded-xl border border-slate-200/80 text-xs">
+            <button
+              onClick={() => setCanvasScale(canvasScale < 0.95 ? 1.0 : 0.88)}
+              className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-700 hover:bg-white hover:shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              title="Toggle Auto-Fit Viewport (88% vs 100%)"
+            >
+              {canvasScale < 0.95 ? 'Zoom 100%' : 'Fit View (88%)'}
+            </button>
+            <button
+              onClick={() => setCanvasScale((prev) => Math.min(1.2, +(prev + 0.08).toFixed(2)))}
+              className="px-1.5 py-1 rounded-lg hover:bg-white hover:shadow-xs text-slate-600 font-bold transition-all cursor-pointer"
+              title="Zoom In"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setCanvasScale((prev) => Math.max(0.7, +(prev - 0.08).toFixed(2)))}
+              className="px-1.5 py-1 rounded-lg hover:bg-white hover:shadow-xs text-slate-600 font-bold transition-all cursor-pointer"
+              title="Zoom Out"
+            >
+              −
+            </button>
+          </div>
+
           {/* Responsive Mobile / Canvas View Switcher */}
           <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/80">
             <button
@@ -220,9 +253,9 @@ export default function WorkflowCanvas({
           </div>
 
           {/* Live Auto-Save Timestamp */}
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium font-mono">
+          <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-slate-500 font-medium font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Live Sync • {liveTime} • Lead: Nidhin Raj</span>
+            <span>Live Sync • {liveTime}</span>
           </div>
         </div>
       </div>
@@ -367,10 +400,13 @@ export default function WorkflowCanvas({
       </div>
 
       {/* VIEW 2: Full Large Studio Canvas (Spacious, Apple-Curved Rear Cards, SVG Cables) */}
-      <div className={`${viewMode === 'mobile_stack' ? 'hidden' : 'block'} workflow-canvas-grid relative w-full h-[760px] overflow-x-auto overflow-y-hidden p-6`}>
-        
-        {/* SVG Connector Wires Layer */}
-        <svg className="absolute inset-0 w-[1220px] h-[760px] pointer-events-none z-0">
+      <div className={`${viewMode === 'mobile_stack' ? 'hidden' : 'block'} workflow-canvas-grid relative w-full h-[760px] overflow-x-auto overflow-y-hidden`}>
+        <div
+          className="relative min-w-[1240px] h-[750px] mx-auto select-none transition-transform duration-200 origin-top-left"
+          style={{ transform: `scale(${canvasScale})`, transformOrigin: 'top left' }}
+        >
+          {/* SVG Connector Wires Layer */}
+          <svg className="absolute inset-0 w-[1240px] h-[750px] pointer-events-none z-0">
           <defs>
             <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#f43f5e" floodOpacity="0.3" />
@@ -557,10 +593,10 @@ export default function WorkflowCanvas({
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 leading-tight">
+                      <h4 className="font-display font-extrabold text-[15px] text-slate-900 leading-tight tracking-tight">
                         {asset.name}
                       </h4>
-                      <span className="text-[11px] text-slate-400 font-medium">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
                         {layout.badge || asset.vocab_label}
                       </span>
                     </div>
@@ -596,9 +632,9 @@ export default function WorkflowCanvas({
                 </p>
 
                 {/* Real-time Telemetry Protocol Badge */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-mono text-slate-700 mt-2.5">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-mono font-semibold text-slate-700 mt-2.5">
                   <Activity className={`w-3.5 h-3.5 ${isOnFire ? 'text-rose-500 animate-spin' : 'text-emerald-500'}`} />
-                  <span className="truncate">{liveTelemetry}</span>
+                  <span className="truncate tnum tracking-tight">{liveTelemetry}</span>
                 </div>
               </div>
 
@@ -719,6 +755,8 @@ export default function WorkflowCanvas({
               Tracer Agent Active • SHA-256 Hash Chained: {auditData?.integrity?.valid ? '100% Verified' : 'Monitoring'} • {auditData?.entries?.length || 0} Tamper-Proof Audit Entries • 0 Unapproved Writes
             </span>
           </div>
+        </div>
+
         </div>
 
       </div>

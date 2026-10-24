@@ -543,7 +543,7 @@ export default function App() {
         />
 
         {/* Studio Workspace Content (Short, Clean, Non-Brutalist) */}
-        <main className="flex-1 p-4 md:p-6 max-w-[1360px] w-full mx-auto space-y-3.5">
+        <main className="flex-1 p-3 md:p-6 w-full max-w-[1440px] mx-auto space-y-3.5 min-w-0">
           {activeTab === 'village' ? (
             <>
               {/* SOS Alert & Diagnostic Pager Banner */}

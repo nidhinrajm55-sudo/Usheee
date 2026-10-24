@@ -50,28 +50,30 @@ export default function HeaderBar({
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/90 px-4 md:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
+    <header className="h-16 bg-white border-b border-slate-200/90 px-3 md:px-6 flex items-center justify-between gap-3 sticky top-0 z-40 select-none">
       {/* Left: Workflow Name Title & Operations View Switcher */}
-      <div className="flex items-center gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">
-              {isHealthcare ? 'Clinical HL7 Interface Workflow' : 'Default Reconciliation Workflow'}
-            </h1>
-            {burningAssetId && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] md:text-[11px] font-extrabold animate-pulse">
-                <Flame className="w-3 h-3 text-rose-600 fill-rose-600" />
-                Incident Active
-              </span>
-            )}
-          </div>
+      <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2">
+          <h1 className="text-sm md:text-base font-display font-extrabold text-slate-900 tracking-tight whitespace-nowrap flex items-center gap-2">
+            <span>{isHealthcare ? 'Clinical HL7 Interface Workflow' : 'Default Reconciliation Workflow'}</span>
+          </h1>
+          {burningAssetId ? (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] md:text-[11px] font-extrabold animate-pulse whitespace-nowrap">
+              <Flame className="w-3 h-3 text-rose-600 fill-rose-600" />
+              Incident Active
+            </span>
+          ) : (
+            <span className="hidden sm:inline-block text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/80 uppercase tracking-wider">
+              Live SRE
+            </span>
+          )}
         </div>
 
         {/* View Switcher: Studio Canvas vs Operations Grid */}
-        <div className="hidden lg:flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80 ml-2">
+        <div className="hidden lg:flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80 ml-1">
           <button
             onClick={() => onToggleOperationsView && onToggleOperationsView(false)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               !isOperationsView
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
@@ -83,7 +85,7 @@ export default function HeaderBar({
           </button>
           <button
             onClick={() => onToggleOperationsView && onToggleOperationsView(true)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               isOperationsView
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
@@ -96,23 +98,23 @@ export default function HeaderBar({
         </div>
       </div>
 
-      {/* Center: ✦ Ask AI pill with Ctrl+K badge */}
-      <div className="hidden md:flex items-center">
+      {/* Center: ✦ Ask AI pill with Ctrl+K badge (Flexibly adapts to screen width) */}
+      <div className="hidden md:flex items-center flex-1 max-w-xs mx-2 min-w-0">
         <button
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50/70 text-xs text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-100/70 transition-colors w-56 lg:w-72 cursor-pointer text-left"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50/70 text-xs text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-100/70 transition-colors w-full cursor-pointer text-left truncate"
           title="Open Command Palette (Ctrl+K)"
         >
           <Sparkles className="w-3.5 h-3.5 text-slate-700 shrink-0" />
           <span className="text-slate-500 font-medium truncate">Ask Tracer AI or type /...</span>
-          <span className="ml-auto text-[10px] font-mono font-bold text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
+          <span className="ml-auto text-[10px] font-mono font-bold text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shrink-0">
             Ctrl+K
           </span>
         </button>
       </div>
 
       {/* Right: Actions, Settings, Icons, Avatar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
         {/* Reset Baseline Button */}
         <button
           onClick={onReset}
@@ -126,21 +128,21 @@ export default function HeaderBar({
         {/* Break Randomly Button */}
         <button
           onClick={onTriggerRandomBreak}
-          className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-2xs transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-2xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
           title="Randomly breaks any pipeline endpoint and sends worker to inspect all endpoints"
         >
           <Shuffle className="w-3.5 h-3.5 text-amber-400" />
-          <span className="hidden sm:inline">Break Randomly</span>
+          <span className="hidden md:inline">Break Randomly</span>
         </button>
 
         {/* Test Pipeline Button */}
         <button
           onClick={onTriggerTest}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
           title="Inject seeded incident break and run patrol"
         >
           <PhoneCall className="w-3.5 h-3.5 text-slate-700" />
-          <span>Test Pipeline</span>
+          <span className="hidden lg:inline">Test Pipeline</span>
         </button>
 
         {/* Publish / Patrol Dropdown Button */}

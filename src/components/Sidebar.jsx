@@ -96,7 +96,7 @@ export default function Sidebar({
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
-              <span>Tracer Studio</span>
+              <span className="font-display font-extrabold tracking-tight">Tracer Studio</span>
             </button>
           )}
           <button
@@ -126,7 +126,7 @@ export default function Sidebar({
         <div className="mt-4 space-y-3">
           {!isCollapsed && (
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold text-slate-700">
+              <span className="text-xs font-display font-extrabold text-slate-800 tracking-tight">
                 {isHealthcare ? 'Dave Miller / Flows' : 'Sarah Chen / Flows'}
               </span>
               <button
@@ -174,7 +174,7 @@ export default function Sidebar({
                         <Icon className="w-3.5 h-3.5" />
                       </div>
                       {!isCollapsed && (
-                        <span className="text-xs font-extrabold text-slate-900 truncate">
+                        <span className="text-xs font-display font-extrabold text-slate-900 tracking-tight truncate">
                           {flow.name}
                         </span>
                       )}
