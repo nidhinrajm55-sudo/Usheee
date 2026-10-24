@@ -28,7 +28,9 @@ export default function Sidebar({
   activeTab,
   onSelectTab,
   onTriggerIncident,
-  burningAssetId
+  burningAssetId,
+  className = '',
+  onCloseMobile
 }) {
   const isHealthcare = activeTrack === 'healthcare'
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -84,8 +86,8 @@ export default function Sidebar({
   return (
     <aside
       className={`${
-        isCollapsed ? 'w-16' : 'w-64'
-      } flex-shrink-0 bg-white border-r border-slate-200/90 min-h-screen flex flex-col justify-between p-3.5 transition-all duration-200 select-none`}
+        isCollapsed ? 'w-16' : 'w-full md:w-64'
+      } flex-shrink-0 bg-white border-r border-slate-200/90 h-full min-h-0 md:min-h-screen flex flex-col justify-between p-3.5 transition-all duration-200 select-none ${className}`}
     >
       <div>
         {/* Top Header: Tracer Studio / Toggle Collapse */}

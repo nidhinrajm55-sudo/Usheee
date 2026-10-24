@@ -22,6 +22,16 @@
   --accent-emerald-subtle: #ecfdf5;
   --accent-emerald-border: #a7f3d0;
   --accent-amber: #d97706;
+  
+  /* Bootstrap 5 Variables Override */
+  --bs-body-font-family: var(--font-sans);
+  --bs-body-color: var(--text-primary);
+  --bs-body-bg: var(--bg-workspace);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -32,6 +42,39 @@ body {
   padding: 0;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+/* Link & Button Bootstrap Reboot Reset */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Mobile Safe Areas for Notch & Home Indicator */
+.pb-safe {
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom, 12px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+/* Horizontal slider no-scrollbar with smooth touch momentum */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 h1, h2, h3, h4, .font-display {

@@ -138,8 +138,8 @@ export default function EvalHarnessTab({ evalResults, onRunBenchmark, isRunningB
           <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md">Fixed & Varied Seeds Mode</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto table-responsive">
+          <table className="w-full text-left text-xs table">
             <thead className="bg-slate-50 text-slate-600 font-extrabold border-b border-slate-200">
               <tr>
                 <th className="p-3">Evaluation Metric</th>

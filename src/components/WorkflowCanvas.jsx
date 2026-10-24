@@ -76,7 +76,12 @@ export default function WorkflowCanvas({
   const assets = pack?.assets || []
   const isHealthcare = trackId === 'healthcare'
   const [idleNodeIdx, setIdleNodeIdx] = useState(0)
-  const [viewMode, setViewMode] = useState('auto') // 'auto' | 'mobile_stack' | 'canvas'
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return 'mobile_stack'
+    }
+    return 'canvas'
+  })
   const [canvasScale, setCanvasScale] = useState(1.0)
   const [liveTime, setLiveTime] = useState(() => new Date().toLocaleTimeString())
 
@@ -90,8 +95,12 @@ export default function WorkflowCanvas({
 
   // Auto-fit canvas scale on laptops/tablets if screen is narrower than 1400px
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1440) {
-      setCanvasScale(0.88)
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 768) {
+        setViewMode('mobile_stack')
+      } else if (window.innerWidth < 1440) {
+        setCanvasScale(0.88)
+      }
     }
   }, [])
 
@@ -224,31 +233,31 @@ export default function WorkflowCanvas({
             </button>
           </div>
 
-          {/* Responsive Mobile / Canvas View Switcher */}
-          <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/80">
+          {/* Responsive Mobile Cards vs Studio Canvas Switcher */}
+          <div className="flex items-center bg-slate-100/90 p-0.5 rounded-xl border border-slate-200/80">
             <button
-              onClick={() => setViewMode(viewMode === 'mobile_stack' ? 'canvas' : 'mobile_stack')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              onClick={() => setViewMode('mobile_stack')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer ${
                 viewMode === 'mobile_stack'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
-              title="Toggle Mobile Card Stack view"
+              title="Mobile Vertical Card Stack"
             >
-              <Smartphone className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">Mobile Stack</span>
+              <Smartphone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600" />
+              <span>Cards</span>
             </button>
             <button
               onClick={() => setViewMode('canvas')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer ${
                 viewMode !== 'mobile_stack'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
               title="Full Interactive Workflow Canvas"
             >
-              <Monitor className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Studio Canvas</span>
+              <Monitor className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" />
+              <span>Canvas</span>
             </button>
           </div>
 
@@ -261,7 +270,7 @@ export default function WorkflowCanvas({
       </div>
 
       {/* VIEW 1: Mobile-Optimized Apple Card Stack View (For Phones & Narrow Screens) */}
-      <div className={`${viewMode === 'mobile_stack' ? 'block' : 'hidden lg:hidden'} p-4 md:p-6 bg-slate-50/60 space-y-4`}>
+      <div className={`${viewMode === 'mobile_stack' ? 'block' : 'hidden'} p-3 md:p-6 bg-slate-50/60 space-y-4`}>
         <div className="text-xs text-slate-500 font-bold px-1 flex items-center justify-between">
           <span>PIPELINE ARCHITECTURE (MOBILE FLOW)</span>
           <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-extrabold">

@@ -19,7 +19,8 @@ import {
   Monitor,
   Check,
   Download,
-  UserCheck
+  UserCheck,
+  Menu
 } from 'lucide-react'
 
 export default function HeaderBar({
@@ -37,7 +38,8 @@ export default function HeaderBar({
   hasNotifications,
   sosAlert,
   diagnosedReport,
-  onOpenCommandPalette
+  onOpenCommandPalette,
+  onToggleMobileMenu
 }) {
   const isHealthcare = activeTrack === 'healthcare'
   const [showPublishMenu, setShowPublishMenu] = useState(false)
@@ -50,12 +52,22 @@ export default function HeaderBar({
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/90 px-3 md:px-6 flex items-center justify-between gap-3 sticky top-0 z-40 select-none">
-      {/* Left: Workflow Name Title & Operations View Switcher */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="flex items-center gap-2">
-          <h1 className="text-sm md:text-base font-display font-extrabold text-slate-900 tracking-tight whitespace-nowrap flex items-center gap-2">
-            <span>{isHealthcare ? 'Clinical HL7 Interface Workflow' : 'Default Reconciliation Workflow'}</span>
+    <header className="h-14 md:h-16 bg-white border-b border-slate-200/90 px-3 md:px-6 flex items-center justify-between gap-2 md:gap-3 sticky top-0 z-40 select-none">
+      {/* Left: Mobile Menu Toggle & Workflow Name Title */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Mobile Hamburger Drawer Trigger */}
+        <button
+          onClick={onToggleMobileMenu}
+          className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer active:scale-95 flex items-center justify-center shrink-0"
+          title="Open Navigation Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <h1 className="text-xs sm:text-sm md:text-base font-display font-extrabold text-slate-900 tracking-tight whitespace-nowrap flex items-center gap-1.5">
+            <span className="hidden sm:inline">{isHealthcare ? 'Clinical HL7 Interface Workflow' : 'Default Reconciliation Workflow'}</span>
+            <span className="sm:hidden">{isHealthcare ? 'Clinical HL7 Flow' : 'Reconciliation Flow'}</span>
           </h1>
           {burningAssetId ? (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] md:text-[11px] font-extrabold animate-pulse whitespace-nowrap">

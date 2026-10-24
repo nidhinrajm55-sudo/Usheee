@@ -188,43 +188,43 @@ export default function NotificationModal({
   const instantWebPagerUrl = `https://ntfy.sh/tracer_${cleanedPhone}`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-3xl bg-white rounded-2xl border border-slate-200/90 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="w-full max-w-3xl bg-white rounded-2xl border border-slate-200/90 shadow-2xl flex flex-col max-h-[94vh] sm:max-h-[92vh] overflow-hidden">
         
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-slate-900 text-white shadow-xs">
-              <Smartphone className="w-5 h-5 text-emerald-400" />
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-900 text-white shadow-xs shrink-0">
+              <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-                  Emergency SOS, SMS & Incident Email Center
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight truncate">
+                  SOS, SMS & Incident Center
                 </h2>
                 {sosAlert && (
-                  <span className="flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                    <Flame className="w-3 h-3 fill-rose-600 text-rose-600" />
-                    P0 SOS ACTIVE
+                  <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                    <Flame className="w-2.5 h-2.5 fill-rose-600 text-rose-600" />
+                    P0 SOS
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                On-Call Lead: <strong className="text-slate-800">{engineerName}</strong> • Phone: <span className="font-mono font-bold text-slate-700">{engineerPhone}</span> • Email: <span className="font-mono font-bold text-slate-700">{engineerEmail}</span>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                On-Call: <strong className="text-slate-800">{engineerName}</strong> • <span className="font-mono font-bold text-slate-700">{engineerPhone}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="px-6 pt-3 pb-2 flex items-center justify-between border-b border-slate-100 bg-white text-xs">
-          <div className="flex flex-wrap items-center gap-1.5">
+        {/* Navigation Tabs (Smooth Horizontal Scroll on Mobile) */}
+        <div className="px-3 sm:px-6 pt-2.5 pb-2 flex items-center justify-between border-b border-slate-100 bg-white text-xs overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setActiveTab('diagnosis')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${

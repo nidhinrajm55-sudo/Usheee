@@ -46,7 +46,12 @@ import {
   LayoutGrid,
   Filter,
   Plus,
-  Shuffle
+  Shuffle,
+  Menu,
+  X,
+  Monitor,
+  ShieldCheck,
+  BarChart3
 } from 'lucide-react'
 
 const API_BASE = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '') || (
@@ -58,6 +63,7 @@ const API_BASE = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '') || (
 export default function App() {
   // Navigation & Track Selection (Two Dedicated Interfaces)
   const [activeTab, setActiveTab] = useState('village') // 'village', 'audit', 'eval'
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
   const [activeTrack, setActiveTrack] = useState('fintech') // 'fintech' or 'healthcare'
   const [selectedIncident, setSelectedIncident] = useState('incident_1_fintech_partial_file')
   const [isOperationsView, setIsOperationsView] = useState(false)
@@ -511,15 +517,58 @@ export default function App() {
 
   return (
     <div className={`min-h-screen bg-[#f4f5f8] text-slate-800 flex flex-row ${reducedMotion ? 'reduced-motion' : ''}`}>
-      {/* 1. Left Workflow Studio Sidebar */}
-      <Sidebar
-        activeTrack={activeTrack}
-        onSwitchTrack={handleSwitchTrack}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        onTriggerIncident={handleTriggerIncident}
-        burningAssetId={burningAssetId}
-      />
+      {/* 1. Left Workflow Studio Sidebar (Desktop >= md) */}
+      <div className="hidden md:flex flex-shrink-0">
+        <Sidebar
+          activeTrack={activeTrack}
+          onSwitchTrack={handleSwitchTrack}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          onTriggerIncident={handleTriggerIncident}
+          burningAssetId={burningAssetId}
+        />
+      </div>
+
+      {/* 1b. Mobile Slide-in Offcanvas Drawer (Bootstrap / iOS Style) */}
+      {isMobileDrawerOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex animate-in fade-in duration-200">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileDrawerOpen(false)}
+          />
+          <div className="relative w-72 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
+            <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
+              <span className="font-display font-extrabold text-sm text-slate-900">Tracer Sentinel Studio</span>
+              <button
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                title="Close drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <Sidebar
+                activeTrack={activeTrack}
+                onSwitchTrack={(track) => {
+                  handleSwitchTrack(track)
+                  setIsMobileDrawerOpen(false)
+                }}
+                activeTab={activeTab}
+                onSelectTab={(tab) => {
+                  setActiveTab(tab)
+                  setIsMobileDrawerOpen(false)
+                }}
+                onTriggerIncident={(inc) => {
+                  handleTriggerIncident(inc)
+                  setIsMobileDrawerOpen(false)
+                }}
+                burningAssetId={burningAssetId}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. Main Studio Viewport */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -540,10 +589,11 @@ export default function App() {
           diagnosedReport={diagnosedReport}
           hasNotifications={Boolean(sosAlert || diagnosedReport || sentEmails.length > 0 || sentSms.length > 0)}
           onOpenCommandPalette={() => setShowCommandPalette(true)}
+          onToggleMobileMenu={() => setIsMobileDrawerOpen(true)}
         />
 
         {/* Studio Workspace Content (Short, Clean, Non-Brutalist) */}
-        <main className="flex-1 p-3 md:p-6 w-full max-w-[1440px] mx-auto space-y-3.5 min-w-0">
+        <main className="flex-1 p-3 md:p-6 w-full max-w-[1440px] mx-auto space-y-3.5 min-w-0 pb-24 md:pb-6">
           {activeTab === 'village' ? (
             <>
               {/* SOS Alert & Diagnostic Pager Banner */}
@@ -638,13 +688,13 @@ export default function App() {
                 />
               )}
 
-              {/* Fast Track Scenario Bar (Slim & Clean) */}
-              <div className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
+              {/* Fast Track Scenario Bar (Bootstrap Flex & Grid Mobile Compact) */}
+              <div className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-900 text-white">
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-900 text-white shrink-0">
                     {isHealthcare ? 'Healthcare Track' : 'Fintech Track'}
                   </span>
-                  <span className="text-slate-600 font-medium hidden sm:inline">
+                  <span className="text-slate-600 font-medium text-[11px] truncate hidden sm:inline">
                     {isHealthcare ? 'Interface Queue & Mapping Spike Scenarios' : 'Daily Settlement & Clearing Reconciliation'}
                   </span>
                 </div>
@@ -653,51 +703,51 @@ export default function App() {
                   {/* Random Break Button - Prominent & Dynamic */}
                   <button
                     onClick={handleTriggerRandomBreak}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                     title="Randomly breaks any pipeline endpoint and sends worker to inspect all endpoints"
                   >
                     <Shuffle className="w-3.5 h-3.5 text-amber-400" />
-                    Break Pipeline Randomly
+                    <span>Break Randomly</span>
                   </button>
 
                   {!isHealthcare ? (
                     <>
                       <button
                         onClick={() => handleTriggerIncident('incident_1_fintech_partial_file')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                         title="Silent failure: scheduler green, $241,850 break, row count dropped 69%"
                       >
                         <Flame className="w-3 h-3 fill-white" />
-                        Inject Partial Settlement ($241k Break)
+                        <span>Partial ($241k Break)</span>
                       </button>
 
                       <button
                         onClick={() => handleTriggerIncident('incident_3_fintech_malformed_escalation')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold text-xs transition-all active:scale-95 cursor-pointer"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold text-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                         title="Malformed partner binary file: proves unrecoverable, escalates with 0 writes"
                       >
                         <Radio className="w-3 h-3 text-slate-600" />
-                        Inject Malformed (Zero Writes)
+                        <span>Malformed (0 Writes)</span>
                       </button>
                     </>
                   ) : (
                     <>
                       <button
                         onClick={() => handleTriggerIncident('incident_2_healthcare_mapping_reject')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                         title="Mapping v1.8.2 rejects OBX-5; queue depth hits 428; replay with dedupe"
                       >
                         <Flame className="w-3 h-3 fill-white" />
-                        Inject Mapping Spike (428 Queued)
+                        <span>Mapping Spike (428)</span>
                       </button>
 
                       <button
                         onClick={() => handleTriggerIncident('incident_5_healthcare_acks_stopped')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold text-xs transition-all active:scale-95 cursor-pointer"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold text-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                         title="Channel receiver thread deadlock: TCP connected but 340 pending ACKs"
                       >
                         <Zap className="w-3 h-3 text-slate-600" />
-                        Inject Acks Stall (340 Pending ACKs)
+                        <span>Acks Stall (340)</span>
                       </button>
                     </>
                   )}
@@ -705,10 +755,10 @@ export default function App() {
                   {report && (
                     <button
                       onClick={() => setShowReportModal(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
+                      className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-2xs transition-all active:scale-95 cursor-pointer"
                     >
                       <FileText className="w-3 h-3" />
-                      View Owner Report
+                      <span>Owner Report</span>
                     </button>
                   )}
                 </div>
@@ -748,46 +798,54 @@ export default function App() {
                 </div>
               )}
 
-              {/* Real-Time Metrics Strip (Sleek, Compact, Non-Brutalist) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
-                    {!isHealthcare ? 'Clearing Batch Status' : 'Inbound Message Rate'}
-                  </span>
-                  <span className={`font-mono font-bold text-[11px] mt-0.5 block ${burningAssetId ? 'text-rose-600' : 'text-emerald-700'}`}>
-                    {!isHealthcare
-                      ? (burningAssetId ? '3,842 / 12,500 Rows (-69.3%)' : '12,540 / 12,500 Rows (Normal)')
-                      : (burningAssetId ? '18.6% Rejection Spike' : '0.02% Rejections (Healthy)')}
-                  </span>
+              {/* Real-Time Metrics Strip (Bootstrap Grid Row/Col, Sleek & Compact) */}
+              <div className="row g-2 text-xs">
+                <div className="col-6 col-md-3">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs h-full">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                      {!isHealthcare ? 'Clearing Batch Status' : 'Inbound Message Rate'}
+                    </span>
+                    <span className={`font-mono font-bold text-[11px] mt-0.5 block truncate ${burningAssetId ? 'text-rose-600' : 'text-emerald-700'}`}>
+                      {!isHealthcare
+                        ? (burningAssetId ? '3,842 / 12,500 (-69%)' : '12,540 Rows (Normal)')
+                        : (burningAssetId ? '18.6% Spike' : '0.02% (Healthy)')}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
-                    {!isHealthcare ? 'Ledger Balance Variance' : 'Broker Queue Depth'}
-                  </span>
-                  <span className={`font-mono font-bold text-[11px] mt-0.5 block ${burningAssetId ? 'text-amber-700' : 'text-slate-800'}`}>
-                    {!isHealthcare
-                      ? (burningAssetId ? '$241,850.00 Net Break' : '$0.00 Cleared Match')
-                      : (burningAssetId ? '428 Pending Messages' : '4 Messages (Normal <50)')}
-                  </span>
+                <div className="col-6 col-md-3">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs h-full">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                      {!isHealthcare ? 'Ledger Balance Variance' : 'Broker Queue Depth'}
+                    </span>
+                    <span className={`font-mono font-bold text-[11px] mt-0.5 block truncate ${burningAssetId ? 'text-amber-700' : 'text-slate-800'}`}>
+                      {!isHealthcare
+                        ? (burningAssetId ? '$241,850 Net Break' : '$0.00 Cleared')
+                        : (burningAssetId ? '428 Pending' : '4 Normal (<50)')}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
-                    Accountable Resident
-                  </span>
-                  <span className="font-bold text-slate-800 text-[11px] truncate mt-0.5 block">
-                    {!isHealthcare ? 'Sarah Chen (Recon Ops)' : 'Dave Miller (Integration Lead)'}
-                  </span>
+                <div className="col-6 col-md-3">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs h-full">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                      Accountable Resident
+                    </span>
+                    <span className="font-bold text-slate-800 text-[11px] truncate mt-0.5 block">
+                      {!isHealthcare ? 'Sarah Chen (Ops)' : 'Dave Miller (Lead)'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
-                    Approval & Write Security
-                  </span>
-                  <span className="font-bold text-emerald-700 text-[11px] flex items-center gap-1 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Single-Use Token Guard (0 Violations)
-                  </span>
+                <div className="col-6 col-md-3">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs h-full">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                      Security Gate
+                    </span>
+                    <span className="font-bold text-emerald-700 text-[11px] flex items-center gap-1 mt-0.5 truncate">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" /> Token Guard (0 Violations)
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -917,6 +975,60 @@ export default function App() {
         onSwitchTrack={handleSwitchTrack}
         activeTrack={activeTrack}
       />
+
+      {/* 6. Accessible Mobile Bottom Navigation Dock (Bootstrap Grid Compatible) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 px-2 py-1.5 flex items-center justify-around shadow-lg pb-safe">
+        <button
+          onClick={() => { setActiveTab('village'); setIsOperationsView(false); }}
+          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+            activeTab === 'village' && !isOperationsView ? 'text-blue-600 bg-blue-50/80 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <Monitor className="w-4 h-4" />
+          <span>Pipeline</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveTab('village'); setIsOperationsView(true); }}
+          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+            activeTab === 'village' && isOperationsView ? 'text-emerald-600 bg-emerald-50/80 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span>Grid</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+            activeTab === 'audit' ? 'text-purple-600 bg-purple-50/80 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          <span>Audit</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('eval')}
+          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+            activeTab === 'eval' ? 'text-amber-600 bg-amber-50/80 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Benchmark</span>
+        </button>
+
+        <button
+          onClick={() => setShowNotificationModal(true)}
+          className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 cursor-pointer relative"
+        >
+          <Bell className="w-4 h-4" />
+          {Boolean(sosAlert || diagnosedReport || sentEmails.length > 0 || sentSms.length > 0) && (
+            <span className="absolute top-1 right-2.5 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+          )}
+          <span>Alerts</span>
+        </button>
+      </nav>
     </div>
   )
 }

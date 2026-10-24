@@ -40,8 +40,8 @@ export default function ReportViewModal({ report, onClose }) {
   const tech = report.technical_view || {}
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
